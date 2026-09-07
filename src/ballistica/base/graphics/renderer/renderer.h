@@ -138,6 +138,10 @@ class Renderer {
                                           RenderTarget* render_target) = 0;
   virtual void SetDepthRange(float min, float max) = 0;
   virtual void FlipCullFace() = 0;
+  void SetCardboardScissor(int x, int y, int width, int height) {
+    CardboardSetScissor(x, y, width, height);
+  }
+  void DisableCardboardScissor() { CardboardDisableScissor(); }
 
  protected:
   virtual void DrawDebug() = 0;
@@ -172,6 +176,7 @@ class Renderer {
   virtual void RenderFrameDefEnd() = 0;
   virtual void CardboardDisableScissor() = 0;
   virtual void CardboardEnableScissor() = 0;
+  virtual void CardboardSetScissor(int x, int y, int width, int height) = 0;
 
 #if BA_VR_BUILD
   void VRTransformToRightHand();

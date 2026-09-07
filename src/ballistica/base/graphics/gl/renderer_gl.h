@@ -139,6 +139,9 @@ class RendererGL : public Renderer {
 
   auto GetAutoGraphicsQuality() -> GraphicsQuality override;
   auto GetAutoTextureQuality() -> TextureQuality override;
+#if BA_VR_BUILD
+  void CardboardPrepareDrawable();
+#endif
 
 #if BA_PLATFORM_ANDROID
   std::string GetAutoAndroidRes() override;
@@ -187,6 +190,7 @@ class RendererGL : public Renderer {
   void VREyeRenderBegin() override;
   void CardboardDisableScissor() override;
   void CardboardEnableScissor() override;
+  void CardboardSetScissor(int x, int y, int width, int height) override;
   void RenderFrameDefEnd() override;
 
 #if BA_VR_BUILD

@@ -1149,6 +1149,14 @@ void RendererGL::StandardPostProcessSetup_(ProgramPostProcessGL* p,
     p->SetColorBlurredMoreTexture(blur_buffers_[0]->texture());
   }
   p->SetDepthTexture(cam_target->framebuffer()->depth_texture());
+
+  if (g_core->vr_mode()) {
+    // Preserve depth-aware render targets while keeping all valid depth
+    // values inside the post-process shader's in-focus interval.
+    p->SetDepthOfFieldRanges(-2.0f, -1.0f, 2.0f, 3.0f);
+    return;
+  }
+
   float dof_near_smoothed = this->dof_near_smoothed();
   float dof_far_smoothed = this->dof_far_smoothed();
 
@@ -2721,7 +2729,8 @@ void RendererGL::Load() {
   }
   Renderer::Load();
   int high_qual_pp_flag =
-      g_base->graphics_server->quality() >= GraphicsQuality::kHigher
+      (g_base->graphics_server->quality() >= GraphicsQuality::kHigher
+       && !g_core->vr_mode())
           ? SHD_HIGHER_QUALITY
           : 0;
   screen_mesh_ = std::make_unique<MeshDataSimpleFullGL>(this);
@@ -3376,6 +3385,21 @@ void RendererGL::CardboardDisableScissor() { glDisable(GL_SCISSOR_TEST); }
 
 void RendererGL::CardboardEnableScissor() { glEnable(GL_SCISSOR_TEST); }
 
+void RendererGL::CardboardSetScissor(int x, int y, int width, int height) {
+  glEnable(GL_SCISSOR_TEST);
+  glScissor(static_cast<GLint>(x), static_cast<GLint>(y),
+            static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+}
+
+#if BA_VR_BUILD
+void RendererGL::CardboardPrepareDrawable() {
+#if BA_XCODE_BUILD && BA_VARIANT_CARDBOARD
+  screen_framebuffer_ = GLGetInt(GL_FRAMEBUFFER_BINDING);
+  got_screen_framebuffer_ = true;
+#endif
+}
+#endif
+
 void RendererGL::VREyeRenderBegin() {
   assert(g_core->vr_mode());
 
@@ -3386,7 +3410,18 @@ void RendererGL::VREyeRenderBegin() {
   glDisable(GL_FRAMEBUFFER_SRGB);
 #endif  // BA_RIFT_BUILD
 
+#if BA_XCODE_BUILD && BA_VARIANT_CARDBOARD
+  // GLKView owns the onscreen framebuffer and it is captured when the renderer
+  // loads. VR preprocess draws into several offscreen targets before each eye,
+  // so sampling the current binding here would make subsequent screen draws go
+  // to whichever offscreen FBO happened to be left bound.
+  if (!got_screen_framebuffer_) {
+    got_screen_framebuffer_ = true;
+    screen_framebuffer_ = GLGetInt(GL_FRAMEBUFFER_BINDING);
+  }
+#else
   screen_framebuffer_ = GLGetInt(GL_FRAMEBUFFER_BINDING);
+#endif
 }
 
 #if BA_VR_BUILD

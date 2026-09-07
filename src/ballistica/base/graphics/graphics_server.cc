@@ -9,6 +9,9 @@
 #include "ballistica/base/assets/assets.h"
 #include "ballistica/base/automation/automation.h"
 #include "ballistica/base/graphics/graphics.h"
+#if BA_XCODE_BUILD && BA_VARIANT_CARDBOARD
+#include "ballistica/base/graphics/gl/renderer_gl.h"
+#endif
 #include "ballistica/base/graphics/renderer/renderer.h"
 #include "ballistica/base/logic/logic.h"
 #include "ballistica/core/core.h"
@@ -198,6 +201,54 @@ auto GraphicsServer::TryRender() -> bool {
 
   return success;
 }
+
+#if BA_VR_BUILD
+auto GraphicsServer::TryRenderVRStereo(
+    float head_tx, float head_ty, float head_tz, float head_yaw,
+    float head_pitch, float head_roll, const VREyeRenderParams& left_eye,
+    const VREyeRenderParams& right_eye) -> bool {
+  assert(g_base->app_adapter->InGraphicsContext());
+
+  bool success{};
+
+  if (FrameDef* frame_def = WaitForRenderFrameDef_()) {
+#if BA_XCODE_BUILD && BA_VARIANT_CARDBOARD
+    static_cast<RendererGL*>(renderer())->CardboardPrepareDrawable();
+#endif
+    ApplySettings(frame_def->settings());
+    RunFrameDefMeshUpdates(frame_def);
+
+    auto target = renderer()->screen_render_target();
+    if (target != nullptr && render_hold_ == 0) {
+      Renderer* renderer = this->renderer();
+      renderer->VRSetHead(head_tx, head_ty, head_tz, head_yaw, head_pitch,
+                          head_roll);
+      PreprocessRenderFrameDef(frame_def);
+
+      auto draw_eye = [this, renderer, frame_def](const VREyeRenderParams& eye) {
+        renderer->SetCardboardScissor(eye.viewport_x, eye.viewport_y,
+                                      eye.viewport_width,
+                                      eye.viewport_height);
+        renderer->VRSetEye(eye.eye, eye.yaw, eye.pitch, eye.roll, eye.tan_l,
+                           eye.tan_r, eye.tan_b, eye.tan_t, eye.eye_x,
+                           eye.eye_y, eye.eye_z, eye.viewport_x,
+                           eye.viewport_y);
+        DrawRenderFrameDef(frame_def, eye.eye);
+      };
+
+      draw_eye(left_eye);
+      draw_eye(right_eye);
+      renderer->DisableCardboardScissor();
+      FinishRenderFrameDef(frame_def);
+      success = true;
+    }
+
+    g_base->graphics->ReturnCompletedFrameDef(frame_def);
+  }
+
+  return success;
+}
+#endif  // BA_VR_BUILD
 
 auto GraphicsServer::WaitForRenderFrameDef_() -> FrameDef* {
   BA_PRECONDITION_LOG_ONCE(g_base->app_adapter->InGraphicsContext());

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "ballistica/base/app_adapter/app_adapter.h"
+#include "ballistica/base/graphics/graphics_server.h"
 #include "ballistica/shared/generic/runnable.h"
 #include "ballistica/shared/math/vector2f.h"
 
@@ -38,6 +39,13 @@ class AppAdapterApple : public AppAdapter {
 
   /// Called by FromSwift.
   auto TryRender() -> bool;
+#if BA_VR_BUILD
+  auto TryRenderVRStereo(float head_tx, float head_ty, float head_tz,
+                         float head_yaw, float head_pitch, float head_roll,
+                         const GraphicsServer::VREyeRenderParams& left_eye,
+                         const GraphicsServer::VREyeRenderParams& right_eye)
+      -> bool;
+#endif  // BA_VR_BUILD
 
   auto FullscreenControlAvailable() const -> bool override;
   auto FullscreenControlGet() const -> bool override;

@@ -166,6 +166,32 @@ auto AppAdapterApple::TryRender() -> bool {
   return result;
 }
 
+#if BA_VR_BUILD
+auto AppAdapterApple::TryRenderVRStereo(
+    float head_tx, float head_ty, float head_tz, float head_yaw,
+    float head_pitch, float head_roll,
+    const GraphicsServer::VREyeRenderParams& left_eye,
+    const GraphicsServer::VREyeRenderParams& right_eye) -> bool {
+  auto allow = ScopedAllowGraphics_(this);
+
+  std::vector<Runnable*> calls;
+  {
+    auto lock = std::scoped_lock(graphics_calls_mutex_);
+    if (!graphics_calls_.empty()) {
+      graphics_calls_.swap(calls);
+    }
+  }
+  for (auto* call : calls) {
+    call->RunAndLogErrors();
+    delete call;
+  }
+
+  return g_base->graphics_server->TryRenderVRStereo(
+      head_tx, head_ty, head_tz, head_yaw, head_pitch, head_roll, left_eye,
+      right_eye);
+}
+#endif  // BA_VR_BUILD
+
 void AppAdapterApple::EnableResizeFriendlyMode(int width, int height) {
   resize_friendly_frames_ = 5;
   resize_target_resolution_ = Vector2f(width, height);

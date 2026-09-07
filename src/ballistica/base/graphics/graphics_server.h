@@ -23,6 +23,24 @@ namespace ballistica::base {
 /// thread(s) depending on the AppAdapter and environment.
 class GraphicsServer {
  public:
+  struct VREyeRenderParams {
+    int eye{};
+    float yaw{};
+    float pitch{};
+    float roll{};
+    float tan_l{};
+    float tan_r{};
+    float tan_b{};
+    float tan_t{};
+    float eye_x{};
+    float eye_y{};
+    float eye_z{};
+    int viewport_x{};
+    int viewport_y{};
+    int viewport_width{};
+    int viewport_height{};
+  };
+
   GraphicsServer();
   ~GraphicsServer();
 
@@ -82,6 +100,13 @@ class GraphicsServer {
   // Attempts to wait for a frame-def to come in and render it.
   // Returns true if a frame was rendered.
   auto TryRender() -> bool;
+
+#if BA_VR_BUILD
+  auto TryRenderVRStereo(float head_tx, float head_ty, float head_tz,
+                         float head_yaw, float head_pitch, float head_roll,
+                         const VREyeRenderParams& left_eye,
+                         const VREyeRenderParams& right_eye) -> bool;
+#endif  // BA_VR_BUILD
 
   // Init the modelview matrix to look here.
   void SetCamera(const Vector3f& eye, const Vector3f& target,
