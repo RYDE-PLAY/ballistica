@@ -65,8 +65,9 @@ if TYPE_CHECKING:
 PY_VER = '3.14'
 PY_VER_EXACT = '3.14.6'
 BEEWARE_BRANCH = '3.14'
-# BEEWARE_COMMIT: str | None = None  # Pin to a commit hash to override branch.
-BEEWARE_COMMIT: str | None = None
+BEEWARE_COMMIT: str | None = (
+    'b4678bc4288477415a01e8702e53b65bce336eae'
+)
 
 # Prebuilt dep versions from beeware/cpython-apple-source-deps.
 OPENSSL_VER = '3.5.7-1'
