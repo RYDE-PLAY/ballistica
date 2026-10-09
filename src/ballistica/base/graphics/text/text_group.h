@@ -4,6 +4,7 @@
 #define BALLISTICA_BASE_GRAPHICS_TEXT_TEXT_GROUP_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -71,8 +72,8 @@ class TextGroup : public Object {
     assert(index < static_cast<int>(entries_.size()));
     return g_base->assets->BuiltinTexture(
         entries_[index]->type == TextMeshEntryType::kOSRendered
-            ? BuiltinTextureID::kTexturesSoftRect2
-            : BuiltinTextureID::kTexturesSoftRect);
+            ? BuiltinTextureID::kTexturesSoftRect2Mask
+            : BuiltinTextureID::kTexturesSoftRectMask);
   }
 
   void SetText(const std::string& text,
@@ -82,6 +83,9 @@ class TextGroup : public Object {
 
   auto text() const -> const std::string& { return text_; }
 
+  /// The texture holding this text's OS-rendered spans, if it has any.
+  auto os_texture() const -> TextureAsset* { return os_texture_.get(); }
+
   /// Calc the carat position for the given text/carat-index. Returns
   /// false if some needed OS-span measure is still warming in the
   /// background (never stalls); skip drawing the carat that frame and
@@ -89,6 +93,26 @@ class TextGroup : public Object {
   auto GetCaratPts(const std::string& text_in, TextMesh::HAlign alignment_h,
                    TextMesh::VAlign alignment_v, int carat_pos, float* carat_x,
                    float* carat_y) -> bool;
+
+  /// How GetCaratPosAtPoint() picks a slot within a row.
+  enum class CaratHitMode : uint8_t {
+    /// The boundary nearest the point; natural for a line carat (the
+    /// left half of a char lands before it, the right half after).
+    kNearestBoundary,
+    /// The slot just before the char containing the point; natural for
+    /// a block carat (which then covers the clicked char).
+    kContainingChar,
+  };
+
+  /// The inverse of GetCaratPts(): return the carat index for a point in
+  /// the same text-local space (the nearest row first, then a slot
+  /// within it per `mode`). Returns empty if some needed OS-span measure
+  /// is still warming in the background (never stalls); see
+  /// TextGraphics::WarmUpCaratMeasuresAsync() for heading that off.
+  auto GetCaratPosAtPoint(const std::string& text_in,
+                          TextMesh::HAlign alignment_h,
+                          TextMesh::VAlign alignment_v, float x, float y,
+                          CaratHitMode mode) -> std::optional<int>;
 
  private:
   struct TextMeshEntry {

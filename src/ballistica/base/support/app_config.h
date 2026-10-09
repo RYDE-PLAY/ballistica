@@ -29,6 +29,8 @@ class AppConfig {
     kSoundVolume,
     kMusicVolume,
     kGoogleVRRenderTargetScale,
+    kCustomScreenInsets,
+    kDevConsoleButtonSize,
     kLast  // Sentinel.
   };
 
@@ -44,12 +46,14 @@ class AppConfig {
     kTouchActionControlType,
     kTouchMovementControlType,
     kGraphicsQuality,
-    kTextureQuality,
     kVerticalSync,
     kVRHeadRelativeAudio,
     kMacControllerSubsystem,
     kDevConsoleActiveTab,
     kInsecureConnections,
+    kScreenInsets,
+    kDevConsoleButtonStyle,
+    kDevConsoleButtonAnchor,
     kLast  // Sentinel.
   };
 
@@ -62,14 +66,16 @@ class AppConfig {
 
   enum class BoolID {
     kTouchControlsSwipeHidden,
+    kTouchControlsHaptics,
+    kThermalThrottling,
     kFullscreen,
     kKickIdlePlayers,
     kAlwaysUseInternalKeyboard,
+    kAllowExtremeAspectRatios,
     kUseInsecureConnections,
     kShowFPS,
     kShowPing,
     kShowDevConsoleButton,
-    kEnableTVBorder,
     kKeyboardP2Enabled,
     kEnablePackageMods,
     kChatMuted,
@@ -77,7 +83,6 @@ class AppConfig {
     kDisableCameraShake,
     kDisableCameraGyro,
     kShowDemosWhenIdle,
-    kShowDeprecatedLoginTypes,
     kHighlightPotentialTokenPurchases,
     kUseNativePythonREPL,
     kDisableXInput,

@@ -128,6 +128,12 @@ from batools.pcommands import (
 )
 from batools.pcommands2 import (
     gen_builtin_asset_ids,
+    gen_base_asset_set_py,
+    gen_base_asset_set_cpp,
+    gen_scene_asset_set_py,
+    gen_scene_asset_set_cpp,
+    gen_ui_asset_set_py,
+    gen_ui_asset_set_cpp,
     gen_python_init_module,
     gen_monolithic_register_modules,
     py_examine,
@@ -158,6 +164,7 @@ from batools.pcommands3 import (
     remove_docker_images,
     generate_flathub_manifest,
     gen_pyembed,
+    require_unsandboxed,
 )
 from batools.pcommands4 import (
     ios_sim_run,
@@ -165,6 +172,7 @@ from batools.pcommands4 import (
     assetworkspace,
     cst_test,
     prefab_symbols_fetch,
+    dump_symbols_fetch,
     push_ipa_to_archive,
     push_apk_to_archive,
 )

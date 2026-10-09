@@ -33,7 +33,6 @@ from babase import (
     AppTimer,
     asset_loads_allowed,
     balog,
-    Call,
     CallPartial,
     CallStrict,
     DevConsoleButtonDef,
@@ -50,6 +49,7 @@ from babase import (
     commit_app_config,
     CloudSubscription,
     ContextRef,
+    device_haptics_supported,
     displaytime,
     DisplayTime,
     displaytimer,
@@ -58,6 +58,7 @@ from babase import (
     do_once,
     existing,
     fade_screen,
+    get_auto_screen_inset_amount,
     get_display_resolution,
     get_input_idle_time,
     get_ip_address_type,
@@ -71,6 +72,7 @@ from babase import (
     get_virtual_safe_area_size,
     get_virtual_screen_size,
     getclass,
+    hasgyro,
     have_permission,
     in_logic_thread,
     in_main_menu,
@@ -78,6 +80,7 @@ from babase import (
     is_browser_likely_available,
     is_xcode_build,
     lock_all_input,
+    logic_thread_submit,
     LoginAdapter,
     LoginInfo,
     LangStr,
@@ -118,20 +121,28 @@ from babase import (
     UIScale,
     unlock_all_input,
     utc_now_cloud,
-    WeakCall,
+    warm_up_string_measure,
     WeakCallPartial,
     WeakCallStrict,
     workspaces_in_use,
+    wrap_text,
 )
+
+# Deprecated names deliberately kept in the public api for compat;
+# imported separately so the deprecation ignore stays targeted.
+from babase import Call  # type: ignore[deprecated]
+from babase import WeakCall  # type: ignore[deprecated]
 
 from _bauiv1 import (
     buttonwidget,
     checkboxwidget,
     columnwidget,
     containerwidget,
+    get_depiction_control,
     get_qrcode_texture,
     get_selected_widget,
     get_special_widget,
+    play_swish,
     apmeshget,
     apsoundget,
     aptextureget,
@@ -146,27 +157,35 @@ from _bauiv1 import (
     root_ui_resume_updates,
     rowwidget,
     scrollwidget,
+    sliderwidget,
     spinnerwidget,
     Sound,
     Texture,
     textwidget,
     uibounds,
+    ViewerSource,
     Widget,
     widget,
     widget_by_id,
 )
 from bauiv1._assetref import (
+    texture_from_ref,
+    mesh_from_ref,
+    sound_from_ref,
     TextureHandle,
     MeshHandle,
     SoundHandle,
 )
 from bauiv1._keyboard import Keyboard
 from bauiv1._uitypes import (
+    snap_slider_value,
     uicleanupcheck,
     RootUIUpdatePause,
     UIOpenState,
 )
+from bauiv1._generated.ui_asset_set import UIAssetSet, set_ui_asset_set
 from bauiv1._appsubsystem import UIV1AppSubsystem
+from bauiv1._viewer import Viewer, ViewerRegistry
 from bauiv1._window import (
     Window,
     MainWindowState,
@@ -176,6 +195,9 @@ from bauiv1._window import (
 )
 
 __all__ = [
+    'sound_from_ref',
+    'mesh_from_ref',
+    'texture_from_ref',
     'accountlog',
     'AccountV2Handle',
     'add_clean_frame_callback',
@@ -219,6 +241,7 @@ __all__ = [
     'containerwidget',
     'CloudSubscription',
     'ContextRef',
+    'device_haptics_supported',
     'displaytime',
     'DisplayTime',
     'displaytimer',
@@ -227,11 +250,13 @@ __all__ = [
     'do_once',
     'existing',
     'fade_screen',
+    'get_auto_screen_inset_amount',
     'get_display_resolution',
     'get_input_idle_time',
     'get_ip_address_type',
     'get_legacy_langdata',
     'get_max_graphics_quality',
+    'get_depiction_control',
     'get_qrcode_texture',
     'get_replays_dir',
     'get_selected_widget',
@@ -249,6 +274,7 @@ __all__ = [
     'getmesh',
     'getsound',
     'gettexture',
+    'hasgyro',
     'have_permission',
     'hscrollwidget',
     'imagewidget',
@@ -259,6 +285,7 @@ __all__ = [
     'is_xcode_build',
     'Keyboard',
     'lock_all_input',
+    'logic_thread_submit',
     'LoginAdapter',
     'LoginInfo',
     'LangStr',
@@ -283,10 +310,13 @@ __all__ = [
     'Permission',
     'Plugin',
     'PluginSpec',
+    'play_swish',
     'pushcall',
     'quit',
     'QuitType',
     'reload_hooks',
+    'set_ui_asset_set',
+    'UIAssetSet',
     'request_main_ui',
     'request_permission',
     'root_ui_pause_updates',
@@ -300,6 +330,7 @@ __all__ = [
     'set_main_ui_input_device',
     'shutdown_suppress_begin',
     'shutdown_suppress_end',
+    'sliderwidget',
     'Sound',
     'SoundHandle',
     'SpecialChar',
@@ -313,6 +344,7 @@ __all__ = [
     'textwidget',
     'timestring',
     'uibounds',
+    'snap_slider_value',
     'uicleanupcheck',
     'uilog',
     'UIOpenState',
@@ -320,6 +352,10 @@ __all__ = [
     'UIV1AppSubsystem',
     'unlock_all_input',
     'utc_now_cloud',
+    'Viewer',
+    'ViewerRegistry',
+    'ViewerSource',
+    'warm_up_string_measure',
     'WeakCall',
     'WeakCallPartial',
     'WeakCallStrict',
@@ -328,6 +364,7 @@ __all__ = [
     'Widget',
     'Window',
     'workspaces_in_use',
+    'wrap_text',
 ]
 
 # Sanity check: we want to keep ballistica's dependencies and
