@@ -396,6 +396,13 @@ void UIV1FeatureSet::DeleteWidget(Widget* widget) {
 }
 
 void UIV1FeatureSet::ApplyAppConfig() {
+#if BA_PLATFORM_IOS && BA_XCODE_BUILD
+  if (g_core->vr_mode()) {
+    // The UIKit editor is outside the stereo view, so use the in-game one.
+    always_use_internal_on_screen_keyboard_ = true;
+    return;
+  }
+#endif
   always_use_internal_on_screen_keyboard_ = g_base->app_config->Resolve(
       base::AppConfig::BoolID::kAlwaysUseInternalKeyboard);
 }
